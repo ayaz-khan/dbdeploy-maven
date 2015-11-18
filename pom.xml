@@ -5,7 +5,7 @@
 	<artifactId>dbdeploy-maven</artifactId>
 	<groupId>dbdeploy-maven</groupId>
 	<version>1.0-SNAPSHOT</version>
-	<name>DB Deploy Maven</name>
+	<name>Maven plugin for DBdeploy</name>
 	<packaging>pom</packaging>
 
 	<pluginRepositories>
@@ -25,15 +25,8 @@
 
 	<properties>
         <db.driver>org.postgresql.Driver</db.driver>
+        <db.schema>pgsql</db.schema>
     </properties>
-
-	<!--<properties>
-		<db.driver>org.postgresql.Driver</db.driver>
-		<db.url>jdbc:postgresql://localhost:5433/postgres</db.url>
-		<db.user>postgres</db.user>
-		<db.passwd>ayaz</db.passwd>
-		<db.schema>dbdeploy</db.schema>
-	</properties>-->
 
 	<dependencies>
 		<dependency>
@@ -43,79 +36,26 @@
 		</dependency>
 	</dependencies>
 
-
-	<profiles>
-		<profile>
-			<id>dev</id>
-			<properties>
-				<db.profile>dev</db.profile>
-				<!--<db.driver>org.postgresql.Driver</db.driver>-->
-				<!--<db.url>jdbc:postgresql://localhost:5433/postgres</db.url>-->
-				<!--<db.user>postgres</db.user>
-				<db.passwd>ayaz</db.passwd>
-				<db.schema>dbdeploy</db.schema>-->
-			</properties>
-			<build>
-			    <plugins>
-			        <plugin>
-			            <groupId>org.codehaus.mojo</groupId>
-			            <artifactId>properties-maven-plugin</artifactId>
-			            <version>1.0-alpha-1</version>
-			            <executions>
-			                <execution>
-			                    <phase>initialize</phase>
-			                    <goals>
-			                        <goal>read-project-properties</goal>
-			                    </goals>
-			                    <configuration>
-			                        <files>
-			                            <!--<file>${basedir}/config/dev.properties</file>-->
-			                            <file>${basedir}/config/dev.properties</file>
-			                        </files>
-			                    </configuration>
-			                </execution>
-			            </executions>
-			        </plugin>
-			    </plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>cit</id>
-			<properties>
-				<db.profile>cit</db.profile>
-				<!--<db.driver>org.postgresql.Driver</db.driver>-->
-				<!--<db.url>jdbc:postgresql://localhost:5433/postgres</db.url>-->
-				<!--<db.user>postgres</db.user>
-				<db.passwd>ayaz</db.passwd>
-				<db.schema>dbdeploy</db.schema>-->
-			</properties>
-			<build>
-			    <plugins>
-			        <plugin>
-			            <groupId>org.codehaus.mojo</groupId>
-			            <artifactId>properties-maven-plugin</artifactId>
-			            <version>1.0-alpha-1</version>
-			            <executions>
-			                <execution>
-			                    <phase>initialize</phase>
-			                    <goals>
-			                        <goal>read-project-properties</goal>
-			                    </goals>
-			                    <configuration>
-			                        <files>
-			                            <file>${basedir}/config/cit.properties</file>
-			                        </files>
-			                    </configuration>
-			                </execution>
-			            </executions>
-			        </plugin>
-			    </plugins>
-			</build>
-		</profile>
-	</profiles>
-
 	<build>
 		<plugins>
+			<plugin>
+	            <groupId>org.codehaus.mojo</groupId>
+	            <artifactId>properties-maven-plugin</artifactId>
+	            <version>1.0.0</version>
+	            <executions>
+	                <execution>
+	                    <phase>initialize</phase>
+	                    <goals>
+	                        <goal>read-project-properties</goal>
+	                    </goals>
+	                    <configuration>
+	                        <files>
+	                            <file>${basedir}/config/${db.env}.properties</file>
+	                        </files>
+	                    </configuration>
+	                </execution>
+	            </executions>
+	        </plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>sql-maven-plugin</artifactId>
@@ -133,17 +73,18 @@
 					<url>${db.url}</url>
 					<username>${db.username}</username>
 					<password>${db.password}</password>
+					<dbms>${db.schema}</dbms>
 				</configuration>
 				<executions>
 					<execution>
-						<id>create-change-log</id>
+						<id>verify-change-log</id>
 						<phase>verify</phase>
 						<goals>
 							<goal>execute</goal>
 						</goals>
 						<configuration>
 							<srcFiles>
-								<srcFile>${basedir}/scripts/createChangeLogTable.sql</srcFile>
+								<srcFile>${basedir}/scripts/verifyChangeLogTable.sql</srcFile>
 							</srcFiles>
 						</configuration>
 					</execution>
@@ -161,11 +102,11 @@
 					<url>${db.url}</url>
 					<userid>${db.username}</userid>
 					<password>${db.password}</password>
-					<!--<dbms>${db.schema}</dbms>-->
+					<dbms>${db.schema}</dbms>
 					<delimiter>;</delimiter>
 					<delimiterType>row</delimiterType>
-					<!--<outputfile>apply.sql</outputfile>
-					<undoOutputfile>undo.sql</undoOutputfile>-->
+					<outputfile>apply.sql</outputfile>
+					<undoOutputfile>undo.sql</undoOutputfile>
 				</configuration>
 
 				<dependencies>
